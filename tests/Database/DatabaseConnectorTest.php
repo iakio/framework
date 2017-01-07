@@ -44,14 +44,12 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 
     public function testPostgresConnectCallsCreateConnectionWithProperArguments()
     {
-        $dsn = 'pgsql:host=foo;dbname=bar;port=111';
+        $dsn = 'pgsql:host=foo;dbname=bar;port=111;options=\'-c client_encoding=utf8\'';
         $config = ['host' => 'foo', 'database' => 'bar', 'port' => 111, 'charset' => 'utf8'];
         $connector = $this->getMockBuilder('Illuminate\Database\Connectors\PostgresConnector')->setMethods(['createConnection', 'getOptions'])->getMock();
         $connection = m::mock('stdClass');
         $connector->expects($this->once())->method('getOptions')->with($this->equalTo($config))->will($this->returnValue(['options']));
         $connector->expects($this->once())->method('createConnection')->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))->will($this->returnValue($connection));
-        $connection->shouldReceive('prepare')->once()->with('set names \'utf8\'')->andReturn($connection);
-        $connection->shouldReceive('execute')->once();
         $result = $connector->connect($config);
 
         $this->assertSame($result, $connection);
@@ -59,15 +57,12 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 
     public function testPostgresSearchPathIsSet()
     {
-        $dsn = 'pgsql:host=foo;dbname=bar';
+        $dsn = 'pgsql:host=foo;dbname=bar;options=\'-c client_encoding=utf8 -c search_path=public\'';
         $config = ['host' => 'foo', 'database' => 'bar', 'schema' => 'public', 'charset' => 'utf8'];
         $connector = $this->getMockBuilder('Illuminate\Database\Connectors\PostgresConnector')->setMethods(['createConnection', 'getOptions'])->getMock();
         $connection = m::mock('stdClass');
         $connector->expects($this->once())->method('getOptions')->with($this->equalTo($config))->will($this->returnValue(['options']));
         $connector->expects($this->once())->method('createConnection')->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))->will($this->returnValue($connection));
-        $connection->shouldReceive('prepare')->once()->with('set names \'utf8\'')->andReturn($connection);
-        $connection->shouldReceive('prepare')->once()->with('set search_path to "public"')->andReturn($connection);
-        $connection->shouldReceive('execute')->twice();
         $result = $connector->connect($config);
 
         $this->assertSame($result, $connection);
@@ -75,15 +70,12 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 
     public function testPostgresSearchPathArraySupported()
     {
-        $dsn = 'pgsql:host=foo;dbname=bar';
+        $dsn = 'pgsql:host=foo;dbname=bar;options=\'-c client_encoding=utf8 -c search_path=public,user\'';
         $config = ['host' => 'foo', 'database' => 'bar', 'schema' => ['public', 'user'], 'charset' => 'utf8'];
         $connector = $this->getMockBuilder('Illuminate\Database\Connectors\PostgresConnector')->setMethods(['createConnection', 'getOptions'])->getMock();
         $connection = m::mock('stdClass');
         $connector->expects($this->once())->method('getOptions')->with($this->equalTo($config))->will($this->returnValue(['options']));
         $connector->expects($this->once())->method('createConnection')->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))->will($this->returnValue($connection));
-        $connection->shouldReceive('prepare')->once()->with('set names \'utf8\'')->andReturn($connection);
-        $connection->shouldReceive('prepare')->once()->with('set search_path to "public", "user"')->andReturn($connection);
-        $connection->shouldReceive('execute')->twice();
         $result = $connector->connect($config);
 
         $this->assertSame($result, $connection);
@@ -91,15 +83,12 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 
     public function testPostgresApplicationNameIsSet()
     {
-        $dsn = 'pgsql:host=foo;dbname=bar';
-        $config = ['host' => 'foo', 'database' => 'bar', 'charset' => 'utf8', 'application_name' => 'Larvel App'];
+        $dsn = 'pgsql:host=foo;dbname=bar;options=\'-c client_encoding=utf8 -c application_name=Laravel\\\\ App\'';
+        $config = ['host' => 'foo', 'database' => 'bar', 'charset' => 'utf8', 'application_name' => 'Laravel App'];
         $connector = $this->getMockBuilder('Illuminate\Database\Connectors\PostgresConnector')->setMethods(['createConnection', 'getOptions'])->getMock();
         $connection = m::mock('stdClass');
         $connector->expects($this->once())->method('getOptions')->with($this->equalTo($config))->will($this->returnValue(['options']));
         $connector->expects($this->once())->method('createConnection')->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))->will($this->returnValue($connection));
-        $connection->shouldReceive('prepare')->once()->with('set names \'utf8\'')->andReturn($connection);
-        $connection->shouldReceive('prepare')->once()->with('set application_name to \'Larvel App\'')->andReturn($connection);
-        $connection->shouldReceive('execute')->twice();
         $result = $connector->connect($config);
 
         $this->assertSame($result, $connection);
